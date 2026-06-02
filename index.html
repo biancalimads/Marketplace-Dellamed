@@ -531,6 +531,7 @@ function handleUpload(inp){
       if(newBase.length===0)throw new Error('Nenhum dado válido na aba BASE');
       CURR_BASE=newBase; CURR_ITENS=newItens;
       info.innerHTML='✅ <b>'+file.name+'</b> — '+newBase.length+' registros · '+new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      rebuildItensFiltros(newItens);
       renderMktp(); renderItens();
     }catch(err){
       info.innerHTML='❌ Erro: <b>'+err.message+'</b>';
@@ -538,6 +539,49 @@ function handleUpload(inp){
     inp.value='';
   };
   reader.readAsArrayBuffer(file);
+}
+
+/* ── REBUILD ITENS FILTERS ─── */
+const MES_ORD=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MES_ABV={Janeiro:'Jan',Fevereiro:'Fev','Março':'Mar',Abril:'Abr',Maio:'Mai',Junho:'Jun',Julho:'Jul',Agosto:'Ago',Setembro:'Set',Outubro:'Out',Novembro:'Nov',Dezembro:'Dez'};
+function rebuildItensFiltros(itens){
+  /* ANOS */
+  const anos=[...new Set(itens.map(r=>r[0]).filter(Boolean))].sort();
+  const anoBody=document.querySelector('#fd-i-ano-pop .fp-body');
+  if(anoBody){
+    anoBody.innerHTML=anos.map(a=>`<label class="fdi"><input type="checkbox" data-val="${a}" data-pfx="i-ano" checked onchange="onChk(this)"><span>${a}</span></label>`).join('');
+    const allChk=document.getElementById('i-ano-all');if(allChk)allChk.checked=true;
+    updFdBtn('i-ano');
+  }
+  /* MESES */
+  const mesSet=new Set(itens.map(r=>r[1]).filter(Boolean));
+  const meses=MES_ORD.filter(m=>mesSet.has(m));
+  const mesBody=document.querySelector('#fd-i-mes-pop .fp-body');
+  if(mesBody){
+    mesBody.innerHTML=meses.map(m=>`<label class="fdi"><input type="checkbox" data-val="${m}" data-pfx="i-mes" checked onchange="onChk(this)"><span>${MES_ABV[m]||m}</span></label>`).join('');
+    const allChk=document.getElementById('i-mes-all');if(allChk)allChk.checked=true;
+    updFdBtn('i-mes');
+  }
+  /* CANAIS */
+  const canais=[...new Set(itens.map(r=>r[3]).filter(Boolean))].sort();
+  const canBody=document.querySelector('#fd-i-can-pop .fp-body');
+  if(canBody){
+    canBody.innerHTML=canais.map(c=>`<label class="fdi"><input type="checkbox" data-val="${c}" data-pfx="i-can" checked onchange="onChk(this)"><span>${c.replace(' DELLAMED','')}</span></label>`).join('');
+    const allChk=document.getElementById('i-can-all');if(allChk)allChk.checked=true;
+    updFdBtn('i-can');
+  }
+  /* COMP ANO (radio) */
+  const acmpBody=document.querySelector('#fd-i-acmp-pop .fp-body');
+  if(acmpBody){
+    acmpBody.innerHTML=`<label class="fdi"><input type="radio" name="i-acmp" value="" checked onchange="onRad('i-acmp')"><span style="color:#94a3b8">— Nenhum —</span></label>`+anos.map(a=>`<label class="fdi"><input type="radio" name="i-acmp" value="${a}" onchange="onRad('i-acmp')"><span>${a}</span></label>`).join('');
+    updFdBtn('i-acmp');
+  }
+  /* COMP MÊS (radio) */
+  const mcmpBody=document.querySelector('#fd-i-mcmp-pop .fp-body');
+  if(mcmpBody){
+    mcmpBody.innerHTML=`<label class="fdi"><input type="radio" name="i-mcmp" value="" checked onchange="onRad('i-mcmp')"><span style="color:#94a3b8">— Nenhum —</span></label>`+meses.map(m=>`<label class="fdi"><input type="radio" name="i-mcmp" value="${m}" onchange="onRad('i-mcmp')"><span>${MES_ABV[m]||m}</span></label>`).join('');
+    updFdBtn('i-mcmp');
+  }
 }
 
 /* ── SAVE ─── */
